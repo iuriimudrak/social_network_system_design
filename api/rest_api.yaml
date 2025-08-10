@@ -1,0 +1,506 @@
+openapi: 3.0.3
+info:
+  title: Social Network for Travelers
+  description: Base Social Network for Travelers API
+  version: 1.0.0
+tags:
+  - name: post
+  - name: user
+  - name: feed
+  - name: like
+  - name: comment
+components:
+  schemas:
+    Cursor:
+      type: string
+      pattern: '^\d+$'
+      minLength: 1
+      maxLength: 20
+      example: '1264047154593136640'
+      description: |
+        The cursor identifying the last received page
+
+    PageSize:
+      type: integer
+      example: 20
+      description: |
+        The size of the page
+
+    FeedType:
+      type: string
+      enum:
+        - random
+        - friends
+      example: random
+      description: |
+        The type of news feed being fetched 
+
+    Posts:
+      type: object
+      required:
+        - pagination
+        - posts
+      properties:
+        pagination:
+          type: object
+          properties:
+            cursor:
+              $ref: '#/components/schemas/Cursor'
+            page_size:
+              $ref: '#/components/schemas/PageSize'
+        posts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Post'
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: '1264047154593136640'
+        created_at:
+          type: string
+          format: date-time
+          example: '2023-10-05T14:30:00Z'
+          description: |
+            Date time of post creating in RFC 3339 format (ISO 8601).
+        updated_at:
+          type: string
+          format: date-time
+          example: '2024-10-05T10:44:00Z'
+          description: |
+            Date time of post updating in RFC 3339 format (ISO 8601).
+        author:
+          $ref: '#/components/schemas/Author'
+        location:
+          $ref: '#/components/schemas/Location'
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: 'What is the beautiful way to discover yourself!'
+        is_truncated:
+          type: boolean
+          description: |
+            The flag identifying if the text is truncated
+        stats:
+          type: object
+          description: |
+            The number of reactions and comments to the post
+          properties:
+            likes:
+              type: integer
+              minimum: 0
+              example: 127
+            comments:
+              type: integer
+              minimum: 0
+              example: 4
+        interactions:
+          type: object
+          description: |
+            User interactions with the post
+          properties:
+            is_liked:
+              type: boolean
+              description: |
+                Flag identifying if the post is liked by the current user
+              example: true
+            is_bookmarked:
+              type: boolean
+              description: |
+                Flag identifying if the post is added to bookmarks
+              example: false
+        _links:
+          $ref: '#/components/schemas/Links'
+
+    Author:
+      type: object
+      required:
+        - username
+        - avatar
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: '1263047154512345678'
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          example: 'traveler92'
+        avatar:
+          type: string
+          maxLength: 255
+
+    Location:
+      type: object
+      required:
+        - coordinates
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: '0o5Fs0EELR0fUjHjbCnEtdUwQe3'
+        name:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Mount Elbrus'
+        coordinates:
+          type: object
+          description: |
+            The coordinates of a location represented by latitude and longitude
+          required:
+            - lat
+            - lon
+          properties:
+            lat:
+              $ref: '#/components/schemas/Latitude'
+            lon:
+              $ref: '#/components/schemas/Longitude'
+        thumbnail:
+          type: string
+          maxLength: 255
+          example: 'https://cdn.example.com/locations/elbrus-thumb.webp'
+
+    Latitude:
+      type: string
+      format: float
+      minimum: -90
+      maximum: 90
+      pattern: '^-?(?:90(?:\.0+)?|[1-8]?\d(?:\.\d+)?)$'
+      example: '43.355'
+
+    Longitude:
+      type: string
+      format: float
+      minimum: -180
+      maximum: 180
+      pattern: '^-?(?:180(?:\.0+)?|1[0-7]\d(?:\.\d+)?|\d{1,2}(?:\.\d+)?)$'
+      example: '42.439'
+
+    Links:
+      type: object
+      required:
+        - type
+        - formats
+      description: |
+        Links to media content
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: '0o5Fs0EELR0fUjHjbCnEtdUwQe3'
+        type:
+          type: string
+          enum:
+            - image
+            - video
+        formats:
+          type: object
+          properties:
+            thumbnail:
+              type: string
+              minLength: 1
+              maxLength: 255
+              example: 'https://cdn.example.com/media/018f1d24/thumb-400x225.webp'
+            standard:
+              minLength: 1
+              maxLength: 255
+              example: 'https://cdn.example.com/media/018f1d24/std-1280x720.webp'
+            original:
+              minLength: 1
+              maxLength: 255
+              example: 'https://cdn.example.com/media/018f1d24/full-3840x2160.jpg'
+            alt:
+              type: string
+              example: 'View of Mount Elbrus from an altitude of 1,500 meters'
+
+    Comments:
+      type: object
+      required:
+        - pagination
+        - comments
+      properties:
+        pagination:
+          type: object
+          properties:
+            cursor:
+              $ref: '#/components/schemas/Cursor'
+            page_size:
+              $ref: '#/components/schemas/PageSize'
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    Comment:
+      type: object
+      description: A Comment to The   Post
+      required:
+        - text
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: '1264047154593136640'
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1000
+
+    Error:
+      type: object
+      required:
+        - status
+        - error
+      properties:
+        status:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: 'Bad request'
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: integer
+              example: 4001
+            message:
+              type: string
+              minLength: 1
+              maxLength: 255
+              example: 'Page size must be defined as number'
+paths:
+  /posts:
+    post:
+      summary: Create a new post
+      operationId: createPost
+      tags:
+        - post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+      responses:
+        201:
+          description: The post was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{post_id}:
+    get:
+      summary: Get a post
+      operationId: getPost
+      tags:
+        - post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        200:
+          description: Successfully Getting Post
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete Post
+      operationId: deletePost
+      tags:
+        - post
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        204:
+          description: The Post Was Deleted
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{post_id}/reactions:
+    post:
+      summary: Set up reaction to the post
+      operationId: setReaction
+      tags:
+        - like
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        201:
+          description: The Like Was Set Up
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Delete Reaction From The Post
+      operationId: deleteReaction
+      tags:
+        - like
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        204:
+          description: The Like Was Deleted
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{post_id}/comments:
+    get:
+      summary: Get Comments
+      operationId: getComments
+      tags:
+        - comment
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      responses:
+        200:
+          description: Successfully Get Comments
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comments'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Create a New Comment
+      operationId: createComment
+      tags:
+        - comment
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 20
+      requestBody:
+        $ref: '#/components/schemas/Comment'
+      responses:
+        201:
+          description: Create a new Comment
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /feed:
+    get:
+      summary: Get Feed
+      operationId: getFeed
+      tags:
+        - feed
+      parameters:
+        - name: cursor
+          in: query
+          $ref: '#/components/schemas/Cursor'
+        - name: page_size
+          in: query
+          $ref: '#/components/schemas/PageSize'
+        - name: feed_type
+          in: query
+          $ref: '#/components/schemas/FeedType'
+      responses:
+        200:
+          description: Successful getting posts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Posts'
+        400:
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
